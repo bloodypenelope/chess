@@ -1,8 +1,10 @@
 """Module that describes chess pieces"""
-from enum import Enum
 from abc import ABC, abstractmethod
-from client.game.configs import *
+from typing import Self, Tuple, Dict, List
+from enum import Enum
 import pygame
+
+CELL_SIZE = 80
 
 
 class PieceColor(Enum):
@@ -12,49 +14,36 @@ class PieceColor(Enum):
 
 
 class Piece(ABC, pygame.sprite.Sprite):
-    """
-    Abstract class that describes a chess piece
+    """Abstract class that describes a chess piece"""
 
-    Args:
-        position (tuple): Position of a chess piece
-        color (PieceColor): Color of a chess piece
-        image (pygame.Surface): Image of a chess piece
-    """
-
-    def __init__(self, position: tuple, color: PieceColor, image: pygame.Surface) -> None:
+    def __init__(self, position: Tuple[int, int], color: PieceColor,
+                 image: pygame.Surface) -> None:
         super().__init__()
         self._file, self._rank = position
         self._color = color
-        self.image = image
-        self.rect = image.get_rect(center=((self._file + 0.5) * SQUARE_SIZE, (self._rank + 0.5) * SQUARE_SIZE))
-        self.rect.x = X_OFFSET + position[0] * SQUARE_SIZE + (SQUARE_SIZE - self.rect.width) // 2
-        self.rect.y = Y_OFFSET + position[1] * SQUARE_SIZE + (SQUARE_SIZE - self.rect.height) // 2
+        self._valid_moves: List[Tuple[int, int]] = []
         self._moved = False
-        self._valid_moves = []
+
+        self.image = image
+        self.rect = image.get_rect()
 
     @property
-    def position(self) -> tuple:
+    def position(self) -> Tuple[int, int]:
+        """Property that contains piece's position on the board
+
+        Returns:
+            Tuple[int, int]: Piece's position
+        """
         return self._file, self._rank
 
     @position.setter
-    def position(self, position: tuple) -> None:
-        if not isinstance(position, tuple):
-            raise TypeError('Invalid type for a position argument')
-
-        positions = set(range(8))
+    def position(self, position: Tuple[int, int]) -> None:
         file, rank = position
-        if file not in positions and rank not in positions:
-            raise ValueError('Invalid position')
-
         self._file, self._rank = file, rank
-        self.rect.center = (self._file + 0.5) * SQUARE_SIZE, (self._rank + 0.5) * SQUARE_SIZE
-        self.rect.x = X_OFFSET + position[0] * SQUARE_SIZE + (SQUARE_SIZE - self.rect.width) // 2
-        self.rect.y = Y_OFFSET + position[1] * SQUARE_SIZE + (SQUARE_SIZE - self.rect.height) // 2
 
     @property
     def color(self) -> PieceColor:
-        """
-        Property that contains a color of a chess piece
+        """Property that contains a color of a chess piece
 
         Returns:
             PieceColor: Color of a chess piece
@@ -63,8 +52,7 @@ class Piece(ABC, pygame.sprite.Sprite):
 
     @property
     def moved(self) -> bool:
-        """
-        Property that tells whether chess piece has moved or not
+        """Property that tells whether chess piece has moved or not
 
         Returns:
             bool: True if chess piece has moved, False otherwise
@@ -72,9 +60,8 @@ class Piece(ABC, pygame.sprite.Sprite):
         return self._moved
 
     @property
-    def valid_moves(self) -> list:
-        """
-        Property that contains a list of chess piece's valid moves
+    def valid_moves(self) -> List[Tuple[int, int]]:
+        """Property that contains a list of chess piece's valid moves
 
         Returns:
             list: List of chess piece's valid moves
@@ -85,15 +72,53 @@ class Piece(ABC, pygame.sprite.Sprite):
         """Sets moved property of a chess piece to True"""
         self._moved = True
 
-    @abstractmethod
-    def update_valid_moves(self, board):
-        """
-        Updates chess piece's valid moves
+    def off_board(self, position: Tuple[int, int]) -> bool:
+        """Tells if the passed position is off board or not
 
         Args:
-            board: Chessboard
+            position (Tuple[int, int]): Position
+
+        Returns:
+            bool: True if the position is off board, False otherwise
+        """
+        file, rank = position
+        return not (0 <= file <= 7 and 0 <= rank <= 7)
+
+    def can_attack(self, board: Dict[Tuple[int, int], Self],
+                   position: Tuple[int, int]) -> bool:
+        """Tells if a piece can attack a given square
+
+        Args:
+            board (Dict[Tuple[int, int], Self]): Chessboard
+            position (Tuple[int, int]): Position of a square
+
+        Returns:
+            bool: True if a piece can attack a square, False otherwise
+        """
+        moves = self.get_moves(board)
+        return position in moves
+
+    @abstractmethod
+    def get_moves(self, board: Dict[Tuple[int, int], Self])\
+            -> List[Tuple[int, int]]:
+        """Gets all possible piece's moves
+
+        Args:
+            board: Dict[Tuple[int, int], Self]: Chessboard
+
+        Returns:
+            List[Tuple[int, int]]: List of all possible moves
         """
 
-    @staticmethod
-    def is_of_board(file: int, rank: int) -> bool:
-        return not (0 <= file <= 7 and 0 <= rank <= 7)
+    @abstractmethod
+    def update_valid_moves(self, board_state: Dict[str, any],
+                           king_position: Tuple[int, int]) -> None:
+        """Updates chess piece's valid moves
+
+        Args:
+            board_state: Dict[str, any]: Chessboard's state
+        """
+
+    @abstractmethod
+    def __str__(self) -> str:
+        pass
