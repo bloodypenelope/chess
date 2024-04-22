@@ -331,7 +331,7 @@ class Board:
         if self.en_passant:
             file, rank = self.en_passant
             file = chr(ord('a') + file)
-            rank += 1
+            rank = 8 - rank
             en_passant = f'{file}{rank}'
         fen.append(en_passant)
 
