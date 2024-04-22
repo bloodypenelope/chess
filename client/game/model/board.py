@@ -75,6 +75,15 @@ class Board:
 
     def make_move(self, current_position: Tuple[int, int],
                   new_position: Tuple[int, int]) -> str:
+        """Makes move on a chessboard
+
+        Args:
+            current_position (Tuple[int, int]): Position of a piece to move
+            new_position (Tuple[int, int]): New position of a piece
+
+        Returns:
+            str: Type of move
+        """
         piece = self.pieces.pop(current_position)
         captured_piece: Optional[Piece] = None
         castle = False
@@ -166,6 +175,11 @@ class Board:
         return 'regular'
 
     def update_pieces_moves(self, color: PieceColor) -> None:
+        """Updates pieces's moves with given color
+
+        Args:
+            color (PieceColor): Color of pieces
+        """
         king_position: Tuple[int, int] = None
         board_state = {
             'board': self.pieces,
@@ -182,17 +196,32 @@ class Board:
                 piece.update_valid_moves(board_state, king_position)
 
     def delete_all_marks(self) -> None:
+        """Deletes all marks on a chessboard"""
         for cell in self.cells.values():
             cell.unmark()
 
     def get_board_cell(self, mouse_position: Tuple[float, float])\
             -> Optional[Tuple[int, int]]:
+        """Gets board cell at mouse position
+
+        Returns:
+            Optional[Tuple[int, int]]: Position of a cell if it presents,\
+                None otherwise
+        """
         for position, cell in self.cells.items():
             collide = cell.rect.collidepoint(mouse_position)
             if collide:
                 return position
 
     def is_king_checked(self, color: PieceColor) -> bool:
+        """Checks if a king with given color is under a check
+
+        Args:
+            color (PieceColor): Color of a king
+
+        Returns:
+            bool: True if king is under a check, False otherwise
+        """
         king: Optional[King] = None
         for piece in self.pieces.values():
             if isinstance(piece, King) and piece.color == color:
