@@ -126,6 +126,7 @@ class SelectMode(Menu):
         fen = get_fisher_fen() if self.fisher else get_classic_fen()
         chess = LocalChess(self.screen, fen)
         chess.mainloop()
+        self.resize()
 
     def bot_config(self) -> None:
         """Goes to the bot config menu"""
@@ -183,6 +184,7 @@ class BotConfig(Menu):
             chess = BotChess(self.screen, self.color, fen,
                              self.engine, self.bot_difficulty)
             asyncio.run(chess.mainloop())
+            self.resize()
 
     def set_color_white(self) -> None:
         """Sets color of your pieces to white"""
@@ -205,7 +207,9 @@ class BotConfig(Menu):
         self.white = self.menu.add.image(WHITE_KING,
                                          onselect=self.set_color_white,
                                          selectable=True)\
-            .resize(CELL_SIZE, CELL_SIZE).translate(-100, 0)
+            .resize(CELL_SIZE, CELL_SIZE).translate(-100, 0)\
+            .shadow(shadow_type='ellipse', shadow_width=30,
+                    color=SELECT_SIDE_COLOR)
         self.black = self.menu.add.image(BLACK_KING,
                                          onselect=self.set_color_black,
                                          selectable=True)\
