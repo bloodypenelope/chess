@@ -1,8 +1,11 @@
 """Module that describes bot chess game's instance"""
+import asyncio
+
 import pygame
 
 from game.model.pieces.piece import PieceColor
 from game.chess.chess import Chess
+from bot.uci_protocol import UCIProtocol
 from utils.popen_uci import popen_uci
 
 
@@ -13,7 +16,8 @@ class BotChess(Chess):
                  fen: str, engine: str, difficulty: int) -> None:
         super().__init__(screen, color, fen)
         self.engine = engine
-        self.transport, self.protocol = None, None
+        self.transport: asyncio.SubprocessTransport = None
+        self.protocol: UCIProtocol = None
         self.difficulty = difficulty
 
     async def mainloop(self) -> None:
