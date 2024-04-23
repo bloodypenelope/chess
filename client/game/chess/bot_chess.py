@@ -36,7 +36,7 @@ class BotChess(Chess):
             self.transport, self.protocol = await popen_uci(self.engine)
             self.protocol.limit_strength()
             self.protocol.set_skill_level(self.difficulty)
-            fisher = 'K' not in self.board.castle_rights[PieceColor.WHITE]
+            fisher = 'K' not in self.board.castle_rights[self.color]
             if fisher:
                 self.protocol.fisher_random()
 
